@@ -9,7 +9,7 @@ single append-only [JSONL](https://jsonlines.org/) file you fully own and can re
 any editor. Backup/sync is your call — see the `tt init` note about Google Drive below.
 
 ```
-$ tt 2 book-review review of Dirty Dangerous Young
+$ tt 1.25 book-review Wellerstein-The Most Awful Responsibility
 $ tt 90m admin
 $ tt -d -1 1 cooking dinner        # -d -1 = yesterday
 ```
@@ -18,7 +18,7 @@ Each entry records the day, decimal hours, a category, an optional free-text not
 uuid and a UTC timestamp of when it was logged:
 
 ```json
-{"day":"2026-08-10","hours":2.0,"category":"book-review","note":"review of Dirty Dangerous Young","id":"…","logged_at":"2026-08-10T14:03:11Z"}
+{"day":"2026-08-10","hours":1.25,"category":"book-review","note":"Wellerstein-The Most Awful Responsibility","id":"…","logged_at":"2026-08-10T14:03:11Z"}
 ```
 
 ## Install
