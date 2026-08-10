@@ -93,12 +93,20 @@ The store file itself is portable JSONL; on Windows it's written with `\r\n` lin
 | `tt cats` | List the categories you've used, with counts. |
 | `tt init [path]` | Print the store path, or set it. |
 | `tt migrate <path>` | Copy the store to a new location and switch to it. |
+| `tt open` | Open the store file in your text editor. |
+| `tt editor [cmd]` | Print the configured editor, or set it. |
 
 **Hours** accept decimals or `h`/`m` forms — `1.5`, `1h30m`, and `90m` all mean the same thing.
 Nothing is rounded; whatever you type is stored.
 
 **`-d/--date`** overrides the day. Use a negative integer for days-ago (`-d -2`) or an ISO date
 (`-d 2026-08-09`). Anything else is rejected. The default is today.
+
+**`tt open`** opens the store in your editor — handy for fixing a typo or scanning the raw log.
+It uses the editor from `tt editor`, falling back to `$VISUAL` / `$EDITOR`, then your platform
+default. Set one with `tt editor vim` or `tt editor "code -w"` (a GUI editor that forks, like
+plain `code`, returns immediately; the `-w`/wait flag makes `tt open` block until you close it).
+Under the hood this is just an `editor = "…"` line in `~/.tt/config.toml`.
 
 ## How categories work
 
@@ -117,3 +125,14 @@ split, and no hierarchy.
 
 Categories are meant to stay small and stable — a handful of buckets you actually think in, not
 a sprawling tag cloud. The notes are where the detail lives.
+
+## Status & what's next
+
+The MVP is **feature-complete**: logging (with the typo nudge), `undo`, `cats`, storage config
+(`init` / `migrate`), and `open` / `editor`. It's write-and-curate — everything so far is about
+getting time *into* the log accurately and reading it by hand.
+
+The next step is **analytics**: reading the log back out. The north-star output is a weekly
+summary ("Sixteen hours on Project Ludic. Six hours of admin.") — aggregation by category over a
+date range, and eventually Paul Graham Raven-style weeknote prose. That layer is intentionally
+deferred until the write side has been lived with; the JSONL is designed to make it easy to add.

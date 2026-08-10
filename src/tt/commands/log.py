@@ -4,6 +4,7 @@ from datetime import date
 
 import click
 
+from ..categories import known_categories, suggest_similar
 from ..config import Config
 from ..parsing import parse_date, parse_hours, slugify
 from ..store import Entry, append_entry
@@ -27,7 +28,13 @@ def log(hours: str, category: str, note: tuple[str, ...], date_: str | None):
         raise click.BadParameter(str(e), param_hint="-d/--date")
 
     cat = slugify(category)
-    entry = Entry.create(day=day, hours=parsed_hours, category=cat, note=" ".join(note))
-
     config = Config.load()
+
+    # Non-blocking typo nudge: warn on a near-miss to an existing category, but always log.
+    suggestions = suggest_similar(cat, known_categories(config.store_path))
+    if suggestions:
+        did_you_mean = " or ".join(f"'{s}'" for s in suggestions)
+        click.echo(f"⚠ new category '{cat}' (did you mean {did_you_mean}?) — logged anyway", err=True)
+
+    entry = Entry.create(day=day, hours=parsed_hours, category=cat, note=" ".join(note))
     append_entry(config.store_path, entry)

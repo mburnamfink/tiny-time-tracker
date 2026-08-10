@@ -9,9 +9,11 @@ from __future__ import annotations
 import click
 
 from .commands import cats as cats_cmd
+from .commands import editor as editor_cmd
 from .commands import init as init_cmd
 from .commands import log as log_cmd
 from .commands import migrate as migrate_cmd
+from .commands import open as open_cmd
 from .commands import undo as undo_cmd
 
 
@@ -45,3 +47,5 @@ cli.add_command(cats_cmd.cats)
 cli.add_command(undo_cmd.undo)
 cli.add_command(init_cmd.init)
 cli.add_command(migrate_cmd.migrate)
+cli.add_command(open_cmd.open_store)
+cli.add_command(editor_cmd.editor)

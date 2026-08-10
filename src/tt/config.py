@@ -23,6 +23,8 @@ def resolve_store_path(raw: str) -> Path:
 @dataclass
 class Config:
     store_path: Path = field(default_factory=lambda: _DEFAULT_STORE_PATH)
+    # Editor `tt open` uses. None means fall back to $VISUAL / $EDITOR / the platform default.
+    editor: str | None = None
 
     @classmethod
     def load(cls) -> "Config":
@@ -31,10 +33,13 @@ class Config:
         with open(CONFIG_PATH, "rb") as f:
             data = tomllib.load(f)
         store_path = Path(data.get("store_path", str(_DEFAULT_STORE_PATH)))
-        return cls(store_path=store_path)
+        editor = data.get("editor") or None
+        return cls(store_path=store_path, editor=editor)
 
     def save(self) -> None:
         CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
         data: dict = {"store_path": str(self.store_path)}
+        if self.editor:
+            data["editor"] = self.editor
         with open(CONFIG_PATH, "wb") as f:
             tomli_w.dump(data, f)

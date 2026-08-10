@@ -15,7 +15,8 @@ Durable decisions that apply across all phases:
 
 - **Command surface (Click)**: a `@click.group()` named `cli` in `src/tt/cli.py`; subcommands in
   `src/tt/commands/` registered flat via `cli.add_command(...)`. Commands: `log` (the default/primary
-  command, invoked as `tt <hours> <category> [note...]`), `undo`, `cats`, `init`, `migrate`.
+  command, invoked as `tt <hours> <category> [note...]`), `undo`, `cats`, `init`, `migrate`,
+  `open`, `editor`.
 - **Storage**: append-only JSONL, one entry per line, at `Config.store_path`. Key order per line is
   fixed: `day, hours, category, note, id, logged_at` (so a manual scan reads the human-meaningful
   fields first).
@@ -30,9 +31,10 @@ Durable decisions that apply across all phases:
 - **Normalisation**: reuse the `slugify` pattern from `review-cli/src/review/slug.py` (NFKD → ASCII,
   lowercase, spaces/underscores → `-`, strip non-word, collapse repeated `-`).
 - **Config**: a `Config` dataclass loading `~/.tt/config.toml` (mirror `review-cli`'s `Config`), with
-  `Config.load()` / `Config.save()`. Field: `store_path` (JSONL path; pointed at a Google Drive
-  folder so the OS handles backup/sync). Set via `tt init` (below) or by hand-editing the TOML. No
-  command ever invokes git.
+  `Config.load()` / `Config.save()`. Fields: `store_path` (JSONL path; pointed at a Google Drive
+  folder so the OS handles backup/sync; set via `tt init`) and `editor` (command `tt open` uses; set
+  via `tt editor`, else falls back to `$VISUAL`/`$EDITOR`/platform default). Either can also be set by
+  hand-editing the TOML. No command ever invokes git.
 - **Path convention** (used by `tt init` and `tt migrate`): a path ending in `.jsonl` is the store
   file itself; any other path is a directory, and the store file is `<dir>/entries.jsonl`.
 - **Packaging**: `src/`-layout, package + distribution name `tt`, hatchling build,
@@ -44,7 +46,7 @@ Durable decisions that apply across all phases:
 
 ```
 src/tt/{__init__,cli,config,store,parsing,categories}.py
-src/tt/commands/{log,undo,cats,init,migrate}.py
+src/tt/commands/{log,undo,cats,init,migrate,open,editor}.py
 tests/
 ```
 
@@ -177,3 +179,39 @@ destination that already exists with data, to avoid clobbering another store.
 - [ ] Reasonable behaviour when the current store doesn't exist yet (nothing to copy).
 - [ ] Tests cover the copy + path switch, the refuse-on-existing-destination guard, and that the
       source is preserved.
+
+---
+
+## Phase 6: `tt open` + `tt editor` — edit the log by hand
+
+**User stories**: open the store in a text editor to fix or scan entries; configure which editor.
+
+### What to build
+
+`tt open` opens the store file in a text editor (via `click.edit(filename=..., editor=...)`),
+resolving the editor as: configured `Config.editor` → `$VISUAL` → `$EDITOR` → platform default.
+Ensures the store's parent directory exists and touches the file if missing so the editor opens
+cleanly. `tt editor <cmd>` saves the editor to config (`Config.save()`); bare `tt editor` prints the
+configured editor, or the `$VISUAL`/`$EDITOR` fallback, or an "unset" note.
+
+### Acceptance criteria
+
+- [ ] `tt open` launches the resolved editor on the store file, creating the file/parent dir if absent.
+- [ ] `tt open` uses `Config.editor` when set, otherwise the `$VISUAL`/`$EDITOR`/default fallback.
+- [ ] `tt editor <cmd>` persists the editor to `~/.tt/config.toml`.
+- [ ] Bare `tt editor` prints the configured editor, the env fallback, or an unset message.
+- [ ] Tests cover open launching the editor on the store (editor call captured) and editor set/print.
+
+---
+
+## Status & next step
+
+The MVP is **feature-complete** — the write-and-curate surface (log with typo nudge, `undo`, `cats`,
+`init`, `migrate`, `open`, `editor`) is built, installed, and tested. `tt sync` was dropped in favour
+of keeping the store in a Google-Drive-synced folder.
+
+**Next step: analytics** — the read side. The north-star output is the **Weeknote**: hours aggregated
+by category over a date range (e.g. "Sixteen hours on Project Ludic. Six hours of admin."), and
+eventually Paul Graham Raven-style weeknote prose. Deliberately deferred until the write side has been
+lived with; the append-only JSONL with fixed keys is designed to make this straightforward to add.
+This will be its own plan.
