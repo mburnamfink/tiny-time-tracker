@@ -133,6 +133,4 @@ The MVP is **feature-complete**: logging (with the typo nudge), `undo`, `cats`, 
 getting time *into* the log accurately and reading it by hand.
 
 The next step is **analytics**: reading the log back out. The north-star output is a weekly
-summary ("Sixteen hours on Project Ludic. Six hours of admin.") — aggregation by category over a
-date range, and eventually Paul Graham Raven-style weeknote prose. That layer is intentionally
-deferred until the write side has been lived with; the JSONL is designed to make it easy to add.
+summary— aggregation by category over a date range, some pretty charts, and automated textual insights. 
